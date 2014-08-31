@@ -9,7 +9,8 @@ module ActiveJob
         end
 
         def enqueue_at(job, timestamp, *args)
-          raise NotImplementedError
+          delay = timestamp - Time.current.to_f
+          JobWrapper.new.async.later delay, job, *args
         end
       end
 
@@ -18,6 +19,10 @@ module ActiveJob
 
         def perform(job, *args)
           job.new.execute(*args)
+        end
+
+        def later(delay, job, *args)
+          after(delay) { perform(job, *args) }
         end
       end
     end
